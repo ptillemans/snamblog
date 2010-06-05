@@ -23,3 +23,18 @@
   (if (= n 1)
     (str astr)
     (str astr "s")))
+
+(defn escape-html [text]
+  (.. (str text)
+      (replace "&" "&amp;")
+      (replace "<" "&lt;")
+      (replace ">" "&gt;")
+      (replace "\"" "&quot;")))
+
+(defn unescape-html [text]
+  (.. (str text)
+      (replace "&amp;" "&")
+      (replace "&lt;" "<")
+      (replace "&gt;" ">")
+      (replace "&quot;" "\"")))
+
