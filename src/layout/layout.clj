@@ -1,5 +1,6 @@
 (ns layout.layout
-  (:require [net.cgrand.enlive-html :as html])
+  (:require [net.cgrand.enlive-html :as html]
+     [ring.util.codec :as c])
   (:use ring.adapter.jetty)
   (:use ring.middleware.params)
   (:use ring.middleware.file)
@@ -24,7 +25,18 @@
   [:div#middle] (maybe-substitute middle)
   [:div#right]  (maybe-substitute right))
 
-(html/defsnippet nav1 "layout/navs.html" [:div#nav1] [])
+(def *link-sel* [[:.content (html/nth-of-type 1)] :> html/first-child])
+
+(html/defsnippet link-model "layout/navs.html" *link-sel*
+  [{title :title id :id}] 
+  [:a] (html/do-> 
+        (html/content title) 
+        (html/set-attr :href (str "/blog/" id))))
+
+(html/defsnippet nav1 "layout/navs.html" [:div#nav1 ] 
+  []
+  [:.content] (html/content (map link-model (last-blogs-summary))))
+
 (html/defsnippet nav2 "layout/navs.html" [:div#nav2] [])
 (html/defsnippet nav3 "layout/navs.html" [:div#nav3] [])
 (html/defsnippet blog "layout/blog.html" [:div#blog] 
@@ -34,6 +46,13 @@
   [:div#article html/any-node] 
     (maybe-substitute 
      (html/html-snippet (markdown-to-html article))))
+(html/defsnippet editblog "layout/editblog.html" [:div#editblog] 
+  [{:keys [id title article]}] 
+  [:input#id] (html/set-attr :id id)
+  [:input#title] (html/set-attr :value (escape-html title))
+  [:textarea#article html/any-node] 
+    (maybe-substitute 
+     (html/html-snippet (escape-html article))))
 
 ;; =============================================================================
 ;; Pages
@@ -42,17 +61,14 @@
 (defn view-blog [blog-info]
   (let [navl (nav1)
         navr (nav2)]
-   (base {:title "View B"
+   (base {:title (:title blog-info)
           :main (three-col {:left  navl
 			    :middle (blog blog-info)
                             :right navr})})))
 
-(defn viewc [params session]
-  (let [navs [(nav1) (nav2)]
-        [navl navr] (if (= (:action params) "reverse") (reverse navs) navs)]
-    (base {:title "View C"
-           :main (three-col {:left  navl
-                             :right navr})})))
+(defn edit-blog [blog-info]
+  (base {:title (:title blog-info)
+         :main (editblog blog-info)}))
 
 (defn index
   ([] (base {}))
@@ -74,13 +90,15 @@
   ;; app routes
   (GET "/" [] 
        (render (index)))
-  (GET "/blog/:id" {params :params}
-       (render (view-blog (get-blog-info (params "id")))))
-  (GET "/edit/:id" {params :params}
-       (render (edit-blog (get-blog-info (params "id")))))
-  (POST "/edit/:id" {params :params}
-       (do (update-blog params)
-	   (render (edit-blog (get-blog-info (params "id"))))))
+  (GET "/blog/:id" [id]
+       (render (view-blog (get-blog-info id))))
+  (GET "/edit/:id" [id]
+       (render (edit-blog (get-blog-info id))))
+  (POST "/edit/:id" [id title article]
+       (do 
+	 (update-blog {:id id 
+		       :article (unescape-html article)})
+	   (render (edit-blog (get-blog-info id)))))
   (GET "/c/" {params :params session :session}
        (render (viewc params session)))
   (GET "/c/:action" {params :params session :session}

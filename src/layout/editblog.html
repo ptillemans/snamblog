@@ -3,15 +3,28 @@
         <link rel="stylesheet" type="text/css" href="main.css"></link>
     </head>
     <body>
-        <div id="edit-blog">
-          <form id="edit-form" method="POST" class="column">
-            <h2 id="edit-title">Blog Post Title</h2>
-            <textarea id="edit-article" class="article">
-              Some interesting stuff, interesting to me at least.
-            </textarea>
-          </form>
+      <div id="editblog">
+	<div id="edit" class="editcolumn">
+            <form id="edit-form" method="POST" class="column">
+              <textarea id="article" name="article" class="article">
+		Some interesting stuff, interesting to me at least.
+              </textarea>
+              <br>
+	      <input type="submit"/>
+            </form>
+	</div>
+	<div id="preview" class="editcolumn">
 	  <div class="wmd-preview"></div>
-	  <script type="text/javascript" src="js/wmd.js"></script>
+          <script type="text/javascript">
+                wmd_options = {
+		    output: "Markdown",
+		    lineLength: 40,
+		    buttons: "bold italic | link blockquote code image | ol ul heading hr",
+		    autostart: true
+		};
+  	  </script>
+ 	  <script type="text/javascript" src="/js/wmd.js"></script>
         </div>
+      </div>
     </body>
 </html>

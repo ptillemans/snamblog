@@ -1,5 +1,7 @@
 (ns blog.blog
   (:import (org.mozilla.javascript Context ScriptableObject))
+  (:import (java.util Date))
+  (:require [clojure.contrib.str-utils2 :as s])
   (:use somnium.congomongo))
 
 (defn load-text-resource [name]
@@ -25,7 +27,35 @@
 (mongo! :db "snamblog")
 
 (defn get-blog-info [id] 
-  (fetch-one 
+  (or 
+   (fetch-one 
     :blog-posts
-    :where { :id id }))
+    :where { :id id })
+   {:title "No such article" :article "No such article\n==================\nThis space intentionally left blank\n" }))
 
+(def debug (atom {}))
+
+(defn update-blog [params] 
+  (let [post (get-blog-info (:id params))
+        previous (:_id post)
+        updates (assoc params
+		  :title (first (s/split-lines (:article params)))
+		  :ts (Date.) 
+		  :prev previous)]
+    (do
+      (reset! debug (atom updates))
+      (if post
+	(update! :blog-posts post (dissoc (merge post updates) :id)))
+      (insert! :blog-posts updates))))
+
+(defn last-blogs-summary 
+  ([n]
+     (fetch 
+        :blog-posts 
+	:where {:id {:$exists 1}} 
+	:order :ts 
+	:limit 5 
+	:skip n
+	:only [:title :id :ts]))
+  ([]
+     (last-blogs-summary 0)))
