@@ -10,6 +10,17 @@ div#header
   background-color: #ccc;
 }
 
+div#header h1
+{
+  float: left
+}
+
+div.action
+{
+  float: right;
+  font-size: 0.75em;
+}
+
 div#footer
 {
   height: 60px;
