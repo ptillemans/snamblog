@@ -15,7 +15,8 @@
 (defn markdown-to-html [txt]
   (let [cx (Context/enter)
         scope (.initStandardObjects cx)
-        input (Context/javaToJS txt scope)
+        text (or txt "No text present.")
+        input (Context/javaToJS text scope)
         script (str (load-text-resource "showdown.js")
                     "new Showdown.converter().makeHtml(input);")]
     (try
@@ -59,3 +60,17 @@
 	:only [:title :id :ts]))
   ([]
      (last-blogs-summary 0)))
+
+
+;;============================================
+;; User stuff
+;;============================================
+
+(defn hash-password [password]
+  (str password))
+
+(defn user-authenticate? [username password]
+  (let [db-user 
+	   (fetch-one :users :where {:username username} :only [:username :password])]
+    (= password (hash-password (:password db-user)))))
+ 
