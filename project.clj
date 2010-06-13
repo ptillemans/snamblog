@@ -10,4 +10,5 @@
                  [rhino/js "1.7R2"]]
   :dev-dependencies [[uk.org.alienscience/leiningen-war "0.0.3"]
 		     [lein-cuke "0.0.1-SNAPSHOT"] 
-		     [swank-clojure "1.2.1"]])
+		     [swank-clojure "1.2.1"]
+		     [com.martiansoftware.nailgun "0.7.1"]])
