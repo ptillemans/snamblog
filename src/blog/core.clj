@@ -56,8 +56,7 @@
 
   (ANY "*" []
        "Page Not Found"))
-
-
+(
 ;; =============================================================================
 ;; The App
 ;; =============================================================================
@@ -68,8 +67,9 @@
 	 (wrap-session)
      ))
 
+(atom server)
+
 (defn run []
   (run-jetty (var app) {:join? false :port 8080}))
 
-;; (run-jetty example {:port 8080 :ssl true :ssl-port 8443 :keystore "keystore" :key-password "secret"})
 
