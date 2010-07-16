@@ -1,18 +1,14 @@
 (ns layout.layout
   (:require [net.cgrand.enlive-html :as html]
      [ring.util.codec :as c])
-  (:use ring.adapter.jetty)
-  (:use ring.middleware.params)
-  (:use ring.middleware.file)
-  (:use ring.middleware.session)
-  (:use ring.util.response)
-  (:use layout.utils)
-  (:use blog.blog)
-  (:use compojure.core))
+  (:use
+   [layout.utils :only (maybe-content maybe-substitute escape-html)]
+   blog.blog
+   ))
 
-;; =============================================================================
-;; The Templates Ma!
-;; =============================================================================
+;; ============================================================================
+;; The Templates
+;; ============================================================================
 
 (html/deftemplate base "layout/base.html"
   [{:keys [title header main footer]}]
@@ -48,7 +44,7 @@
   [:a#edit] (html/set-attr :href (str "/edit/" id))
 )
 
-(html/defsnippet header "layout/base.html" [:div#header]
+(html/defsnippet page-header "layout/base.html" [:div#header]
   [{id :id username :username}]
   [:div#action] (maybe-substitute (if username (actions {:id id :username username}))))
 
@@ -76,79 +72,19 @@
   (let [navl (nav1)
         navr (nav2)]
    (base {:title (:title blog-info)
-	  :header (header {:id (:id blog-info) :username username})
+	  :header (page-header {:id (:id blog-info) :username username})
           :main (three-col {:left  navl
 			    :middle (blog blog-info)
                             :right navr})})))
 
 (defn edit-blog [blog-info username]
   (base {:title (:title blog-info)
-         :header (header {:id (:id blog-info), :username username})
+         :header (page-header {:id (:id blog-info), :username username})
          :main (editblog blog-info)}))
 
 (defn index [username] 
   (base {
-         :header (header {:id nil, :username username})
+         :header (page-header {:id nil, :username username})
 	 :main   (str "Hello " username "!")
 	     }))
-
-;; =============================================================================
-;; Routes
-;; =============================================================================
-(defroutes app-routes
-  ;; app routes
-  (GET "/" {session :session} 
-       (render (index (:username session))))
-;;       (str session))
-  (GET "/blog/:id" {params :params session :session}
-       (let [id (params "id")
-	     username (:username session)
-	     article (get-blog-info id)]
-	 (render (view-blog article username))))
-
-  (POST "/login" {headers :headers params :params session :session}
-	(let [ username (params "username")
-	       password (params "password")
-               authenticated (user-authenticate? username password)]
-	       (assoc (redirect (headers "referer"))
-		 :session (if authenticated 
-			    (assoc session :username username) 
-			    {})
-	       )))
-
-  (GET "/logout" {headers :headers session :session}
-	(assoc (redirect (headers "referer"))
-	  :session (dissoc session :username)))
-
-  (GET "/edit/:id" {params :params session :session}
-       (let [id       (params "id")
-	     username (session :username)]
-	 (render 
-	  (edit-blog 
-	   (get-blog-info id) 
-	   username))))
-
-  (POST "/edit/:id" [id title article]
-       (do 
-	 (update-blog {:id id 
-		       :article (unescape-html article)})
-	   (redirect (str "/blog/" id))))
-
-  ;; static files
-
-  (ANY "*" []
-       "Page Not Found"))
-
-;; =============================================================================
-;; The App
-;; =============================================================================
-
-(def app
-     (-> app-routes
-         (wrap-file "public")
-	 (wrap-session)
-     ))
-
-(defn run []
-  (run-jetty (var app) {:join? false :port 8080}))
 

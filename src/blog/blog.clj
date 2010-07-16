@@ -1,21 +1,23 @@
 (ns blog.blog
   (:import (org.mozilla.javascript Context ScriptableObject))
   (:import (java.util Date))
+  (:import (java.io BufferedReader InputStreamReader))
   (:require [clojure.contrib.str-utils2 :as s])
-  (:use somnium.congomongo))
+  (:use somnium.congomongo)
+  (:use blog.hash))
 
 (defn load-text-resource [name]
-	(apply str 
-		(line-seq 
-			(new java.io.BufferedReader 
-				(new java.io.InputStreamReader 
-					(.getResourceAsStream 
-						(.getClassLoader clojure.main ) name))))))
+  (apply str 
+	 (line-seq 
+	  (new BufferedReader 
+	       (new InputStreamReader 
+		    (.getResourceAsStream 
+		     (.getClassLoader clojure.main ) name))))))
 						
 (defn markdown-to-html [txt]
   (let [cx (Context/enter)
         scope (.initStandardObjects cx)
-        text (or txt "No text present.")
+        text (if (string? txt) txt "No text present.")
         input (Context/javaToJS text scope)
         script (str (load-text-resource "showdown.js")
                     "new Showdown.converter().makeHtml(input);")]
@@ -30,11 +32,9 @@
 (defn get-blog-info [id] 
   (or 
    (fetch-one 
-    :blog-posts
+    :blogposts
     :where { :id id })
    {:title "No such article" :article "No such article\n==================\nThis space intentionally left blank\n" }))
-
-(def debug (atom {}))
 
 (defn update-blog [params] 
   (let [post (get-blog-info (:id params))
@@ -44,15 +44,14 @@
 		  :ts (Date.) 
 		  :prev previous)]
     (do
-      (reset! debug (atom updates))
-      (if post
-	(update! :blog-posts post (dissoc (merge post updates) :id)))
-      (insert! :blog-posts updates))))
+      (if (contains? post :_id)
+	(update! :blogposts post (merge post updates))
+        (insert! :blogposts updates)))))
 
 (defn last-blogs-summary 
   ([n]
      (fetch 
-        :blog-posts 
+        :blogposts 
 	:where {:id {:$exists 1}} 
 	:order :ts 
 	:limit 5 
@@ -66,11 +65,25 @@
 ;; User stuff
 ;;============================================
 
-(defn hash-password [password]
-  (str password))
+(defn get-user [username]
+  (fetch-one :users
+	     :where {:username username}))
+  
+(defn update-user [user]
+  (let [saved-user (get-user (:username user))
+        new-user   (merge saved-user user)]
+    (if (contains? new-user :_id)
+      (update! :users saved-user new-user)
+      (insert! :users new-user))))
+
+
+(defn- get-hash [username]
+  (:password (get-user username)))
+
+(defn set-hash [username password]
+  (update-user (assoc (get-user username) :password (sha256 password))))
 
 (defn user-authenticate? [username password]
-  (let [db-user 
-	   (fetch-one :users :where {:username username} :only [:username :password])]
-    (= password (hash-password (:password db-user)))))
+  (let [hash (get-hash username)]
+    (= (sha256 password) hash)))
  
