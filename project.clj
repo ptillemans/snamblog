@@ -5,9 +5,8 @@
                  [compojure "0.4.1"]
 		 [enlive "1.0.0-SNAPSHOT"]
                  [ring/ring-jetty-adapter "0.2.5"]
-                 [congomongo "0.1.2-SNAPSHOT"]
+                 [org.clojars.bmabey/congomongo "0.1.2-SNAPSHOT"]
                  [rhino/js "1.7R2"]]
-  :dev-dependencies [[uk.org.alienscience/leiningen-war "0.0.3"]
-		     [org.clojars.springify/lein-cuke "0.0.2"]
-		     [autodoc "0.7.1"]
-		     [swank-clojure "1.2.1"]])
+  :dev-dependencies [[autodoc "0.7.1"]
+		     [swank-clojure "1.2.1"]]
+  :main blog.core)
