@@ -1,13 +1,12 @@
 (ns blog.core
   (:use layout.layout
-	blog.blog
+	blog.post
         layout.utils
         compojure.core
-        ring.adapter.jetty
-	ring.middleware.session
-        ring.util.response
-        ring.middleware.file
-        ring.middleware.session)
+        [ring.adapter.jetty :only (run-jetty)]
+        [ring.util.response :only (redirect)]
+ 	[ring.middleware.file :only (wrap-file)]
+        [ring.middleware.session :only (wrap-session)])
   (:require [compojure.route :as route]))
 
 ;; ============================================================================
@@ -16,13 +15,13 @@
 (defroutes app-routes
   ;; app routes
   (GET "/" {session :session} 
-       (let [article (get-blog-info "index")]
-	 (render (view-blog article (:username session)))))
-  (GET "/blog/:id" {params :params session :session}
+      (redirect (str "/post/index")))
+
+  (GET "/post/:id" {params :params session :session}
        (let [id (params "id")
 	     username (:username session)
-	     article (get-blog-info id)]
-	 (render (view-blog article username))))
+	     article (get-post-info id)]
+	 (render (view-post article username))))
 
   (POST "/login" {headers :headers params :params session :session}
 	(let [ username (params "username")
@@ -42,21 +41,21 @@
        (let [id       (params "id")
 	     username (session :username)]
 	 (render 
-	  (edit-blog 
-	   (get-blog-info id) 
+	  (edit-post 
+	   (get-post-info id) 
 	   username))))
 
   (POST "/edit/:id" [id title article]
        (do 
-	 (update-blog {:id id 
+	 (update-post {:id id 
 		       :article (unescape-html article)})
-	   (redirect (str "/blog/" id))))
+	   (redirect (str "/post/" id))))
 
   ;; static files
 
   (ANY "*" []
        "Page Not Found"))
-(
+
 ;; =============================================================================
 ;; The App
 ;; =============================================================================
@@ -67,9 +66,10 @@
 	 (wrap-session)
      ))
 
-(atom server)
-
-(defn run []
+(defonce server 
   (run-jetty (var app) {:join? false :port 8080}))
 
+(defn run [] (.start server))
+
+(defn stop [] (.stop server))
 

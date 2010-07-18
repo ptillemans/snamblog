@@ -1,4 +1,4 @@
-(ns blog.blog
+(ns blog.post
   (:import (org.mozilla.javascript Context ScriptableObject))
   (:import (java.util Date))
   (:import (java.io BufferedReader InputStreamReader))
@@ -29,15 +29,15 @@
 
 (mongo! :db "snamblog")
 
-(defn get-blog-info [id] 
+(defn get-post-info [id] 
   (or 
    (fetch-one 
     :blogposts
     :where { :id id })
-   {:title "No such article" :article "No such article\n==================\nThis space intentionally left blank\n" }))
+   {:id id :title "No such article" :article "No such article\n==================\nThis space intentionally left blank\n" }))
 
-(defn update-blog [params] 
-  (let [post (get-blog-info (:id params))
+(defn update-post [params] 
+  (let [post (get-post-info (:id params))
         previous (:_id post)
         updates (assoc params
 		  :title (first (s/split-lines (:article params)))
@@ -48,7 +48,7 @@
 	(update! :blogposts post (merge post updates))
         (insert! :blogposts updates)))))
 
-(defn last-blogs-summary 
+(defn last-posts-summary 
   ([n]
      (fetch 
         :blogposts 
@@ -58,7 +58,7 @@
 	:skip n
 	:only [:title :id :ts]))
   ([]
-     (last-blogs-summary 0)))
+     (last-posts-summary 0)))
 
 
 ;;============================================

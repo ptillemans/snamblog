@@ -3,11 +3,11 @@
      [ring.util.codec :as c])
   (:use
    [layout.utils :only (maybe-content maybe-substitute escape-html)]
-   blog.blog
+   blog.post
    ))
 
 ;; ============================================================================
-;; The Templates
+;; The Templates 
 ;; ============================================================================
 
 (html/deftemplate base "layout/base.html"
@@ -29,11 +29,11 @@
   [{title :title id :id}] 
   [:a] (html/do-> 
         (html/content title) 
-        (html/set-attr :href (str "/blog/" id))))
+        (html/set-attr :href (str "/post/" id))))
 
 (html/defsnippet nav1 "layout/navs.html" [:div#nav1 ] 
   []
-  [:.content] (html/content (map link-model (last-blogs-summary))))
+  [:.content] (html/content (map link-model (last-posts-summary))))
 
 (html/defsnippet nav2 "layout/navs.html" [:div#nav2] [])
 (html/defsnippet nav3 "layout/navs.html" [:div#nav3] [])
@@ -48,7 +48,7 @@
   [{id :id username :username}]
   [:div#action] (maybe-substitute (if username (actions {:id id :username username}))))
 
-(html/defsnippet blog "layout/blog.html" [:div#blog] 
+(html/defsnippet post "layout/post.html" [:div#post] 
   [{:keys [id title article]}]
   [:h2#title html/text-node] 
     (maybe-substitute title)
@@ -56,7 +56,7 @@
     (maybe-substitute 
      (html/html-snippet (markdown-to-html article))))
 
-(html/defsnippet editblog "layout/editblog.html" [:div#editblog] 
+(html/defsnippet editpost "layout/editpost.html" [:div#editpost] 
   [{:keys [id title article]}] 
   [:input#id] (html/set-attr :id id)
   [:input#title] (html/set-attr :value (escape-html title))
@@ -64,23 +64,23 @@
     (maybe-substitute 
      (html/html-snippet (escape-html article))))
 
-;; =============================================================================
+;; ============================================================================
 ;; Pages
-;; =============================================================================
+;; ============================================================================
 
-(defn view-blog [blog-info username]
+(defn view-post [post-info username]
   (let [navl (nav1)
         navr (nav2)]
-   (base {:title (:title blog-info)
-	  :header (page-header {:id (:id blog-info) :username username})
+   (base {:title (:title post-info)
+	  :header (page-header {:id (:id post-info) :username username})
           :main (three-col {:left  navl
-			    :middle (blog blog-info)
+			    :middle (post post-info)
                             :right navr})})))
 
-(defn edit-blog [blog-info username]
-  (base {:title (:title blog-info)
-         :header (page-header {:id (:id blog-info), :username username})
-         :main (editblog blog-info)}))
+(defn edit-post [post-info username]
+  (base {:title (:title post-info)
+         :header (page-header {:id (:id post-info), :username username})
+         :main (editpost post-info)}))
 
 (defn index [username] 
   (base {

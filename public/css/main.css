@@ -1,24 +1,30 @@
-body
+body 
 {
-  width: 1024px;
+  margin: 0px
 }
 
 div#header
 {
-  height: 60px;
-  width: 100%;
-  background-color: #ccc;
+  height: 108px;
+  margin-top: 9px;
+  margin-bottom: 9px;
+  background-color: #44c;
 }
 
 div#header h1
 {
-  float: left
+  float: left;
+  height: 36px;
+  margin-top: 36px;
+  vertical-align: middle;
 }
 
 div.action
 {
+  margin-top: 9px;
   float: right;
-  font-size: 0.75em;
+  font-size: 0.8em;
+  text-align: right;
 }
 
 div#footer
@@ -118,4 +124,10 @@ pre
 {
   background-color: #eee;
   padding: 5;
+}
+
+img.mugshot
+{
+  height: 216px;
+  margin-left: 29px;
 }

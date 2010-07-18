@@ -1,0 +1,19 @@
+* TODO Tasks
+
+** DONE Create a file to organise snamblog
+   CLOSED: [2010-07-18 zo 10:15]
+
+
+** DONE rename blog to post
+
+[[file:src/blog/core.clj][core file
+]]
+** TODO add tags to snamblog
+   SCHEDULED: <2010-07-19 ma>
+   Tags will be the major organising principle in snamblog. In edit mode a tag cloud is shown to select the tags to add. An edit field allows to add additional tags.
+
+*** TODO add a tags collection to the posts
+
+*** TODO add metadata about the tag
+
+*** TODO create a reverse index from tags to posts

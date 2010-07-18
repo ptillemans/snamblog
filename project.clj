@@ -9,4 +9,5 @@
                  [rhino/js "1.7R2"]]
   :dev-dependencies [[uk.org.alienscience/leiningen-war "0.0.3"]
 		     [org.clojars.springify/lein-cuke "0.0.2"]
+		     [autodoc "0.7.1"]
 		     [swank-clojure "1.2.1"]])
