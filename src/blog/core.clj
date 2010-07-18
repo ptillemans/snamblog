@@ -7,7 +7,8 @@
         [ring.util.response :only (redirect)]
  	[ring.middleware.file :only (wrap-file)]
         [ring.middleware.session :only (wrap-session)])
-  (:require [compojure.route :as route]))
+  (:require [compojure.route :as route])
+  (:gen-class))
 
 ;; ============================================================================
 ;; Routes
@@ -40,10 +41,10 @@
   (GET "/edit/:id" {params :params session :session}
        (let [id       (params "id")
 	     username (session :username)]
-	 (render 
-	  (edit-post 
-	   (get-post-info id) 
-	   username))))
+	 (if username
+	   (render 
+	    (edit-post (get-post-info id) username))
+	   (redirect (str "/post/" id)))))
 
   (POST "/edit/:id" [id title article]
        (do 
@@ -61,15 +62,16 @@
 ;; =============================================================================
 
 (def app
-     (-> app-routes
-         (wrap-file "public")
-	 (wrap-session)
-     ))
+  (-> app-routes
+    (wrap-file "public")
+      (wrap-session)
+  ))
 
-(defonce server 
+(defn run
+  []
   (run-jetty (var app) {:join? false :port 8080}))
 
-(defn run [] (.start server))
-
-(defn stop [] (.stop server))
-
+(defn -main
+  [& args]
+  (run))
+  
