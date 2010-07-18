@@ -27,7 +27,7 @@
        (Context/toString result))
      (finally (Context/exit)))))
 
-(mongo! :db "snamblog")
+(mongo! :host "127.0.0.1" :db "snamblog")
 
 (defn get-post-info [id] 
   (or 
