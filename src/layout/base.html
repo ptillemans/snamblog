@@ -1,24 +1,31 @@
 <html>
     <head>
         <title id="title">Snamellit Blog</title>
+        <link rel="stylesheet" type="text/css" href="/css/reset.css"></link>
+        <link rel="stylesheet" type="text/css" href="/css/960.css"></link>
+        <link rel="stylesheet" type="text/css" href="/css/text.css"></link>
         <link rel="stylesheet" type="text/css" href="/css/main.css"></link>
     </head>
-    <body>
-        <div id="header" class="column">
-            <h1>Snamellit Blog</h1>
-            <div id="action" class="action">
+    <body class="container_12">
+        <div id="header">
+            <div class="grid_9">
+	      <h1>Snamellit Blog</h1>
+	    </div>
+            <div class="action grid_3" id="action">
   	      <form id="loginform" method="POST" action="/login">
 		Login:
 		<input type="text" name="username" size="10"/>
-		<input type="password" name="password" size="10"/>
+
+	      <input type="password" name="password" size="10"/>
 		<input type="submit" value="Login"/>
 	      </form>
             </div>
         </div>
-        <div id="main" class="column">
+	<div class="clear"/>
+        <div id="main" class="grid_12">
             The base body, snore.
         </div>
-        <div id="footer" class="column">
+        <div id="footer" class="grid_12">
             The base footer, snore.
         </div>
     </body>
