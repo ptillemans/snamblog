@@ -18,17 +18,13 @@
   (GET "/" {session :session} 
       (redirect (str "/post/index")))
 
-  (GET "/post/:id" {params :params session :session}
-       (let [id (params "id")
-	     username (:username session)
-	     article (get-post-info id)]
-	 (render (view-post article username))))
 
   (POST "/login" {headers :headers params :params session :session}
 	(let [ username (params "username")
 	       password (params "password")
                authenticated (user-authenticate? username password)]
-	       (assoc (redirect (headers "referer"))
+	  (assoc
+	      (redirect (headers "referer"))
 		 :session (if authenticated 
 			    (assoc session :username username) 
 			    {})
@@ -38,19 +34,30 @@
 	(assoc (redirect (headers "referer"))
 	  :session (dissoc session :username)))
 
-  (GET "/edit/:id" {params :params session :session}
+  (GET "/post/:id" {params :params session :session}
+       (let [id (params "id")
+	     username (:username session)
+	     article (get-post-info id)]
+	 (render (view-post article username))))
+
+  (GET "/post/:id/edit" {params :params session :session}
        (let [id       (params "id")
-	     username (session :username)]
-	 (if username
+	     username (session :username)
+	     post     (get-post-info id)]
+	 (if (username (:owner post))
 	   (render 
-	    (edit-post (get-post-info id) username))
+	    (edit-post post username))
 	   (redirect (str "/post/" id)))))
 
-  (POST "/edit/:id" [id title article]
-       (do 
-	 (update-post {:id id 
-		       :article (unescape-html article)})
-	   (redirect (str "/post/" id))))
+  (POST "/post/:id" {params :params session :session}
+        (let [id       (params "id")
+	      article  (unescape-html (params "article"))
+	      username (session :username)]
+	  (do 
+	    (if username
+	      (update-post {:id id 
+			    :article (unescape-html article)}))
+	    (redirect (str "/post/" id)))))
 
   ;; static files
 

@@ -41,7 +41,7 @@
 (html/defsnippet actions "layout/navs.html" [:div#loggedin]
   [{id :id username :username}]
   [:span#username] (html/content username)
-  [:a#edit] (html/set-attr :href (str "/edit/" id))
+  [:a#edit] (html/set-attr :href (str "/post/" id "/edit"))
 )
 
 (html/defsnippet page-header "layout/base.html" [:div#header]
