@@ -11,6 +11,7 @@
 ** DONE security : no check was done before updating posts
    CLOSED: [2010-07-19 Mon 01:23]
 
+
 ** TODO testability : abstract data store access to ease testability
 
 ** DONE rename blog to post
