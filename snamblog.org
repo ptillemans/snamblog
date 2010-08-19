@@ -27,3 +27,5 @@
 *** TODO add metadata about the tag
 
 *** TODO create a reverse index from tags to posts
+
+** TODO automate git commit messages
