@@ -34,7 +34,14 @@
    (fetch-one 
     :blogposts
     :where { :id id })
-   {:id id :title "No such article" :article "No such article\n==================\nThis space intentionally left blank\n" }))
+   {:id id
+    :title "No such article"
+    :article
+"No such article
+===============
+This space intentionally left blank (for now ;-) ).
+"
+    }))
 
 (defn update-post [params] 
   (let [post (get-post-info (:id params))
@@ -43,10 +50,9 @@
 		  :title (first (s/split-lines (:article params)))
 		  :ts (Date.) 
 		  :prev previous)]
-    (do
-      (if (contains? post :_id)
-	(update! :blogposts post (merge post updates))
-        (insert! :blogposts updates)))))
+    (if (contains? post :_id)
+      (update! :blogposts post (merge post updates))
+      (insert! :blogposts updates))))
 
 (defn last-posts-summary 
   ([n]
