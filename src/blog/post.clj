@@ -93,7 +93,7 @@ This space intentionally left blank (for now ;-) ).
       :limit 10
       :skip n))
   ([post]
-     (last-comments 0)))
+     (last-comments post 0)))
 
 
 ;;============================================
