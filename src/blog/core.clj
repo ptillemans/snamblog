@@ -15,7 +15,7 @@
 ;; ============================================================================
 (defroutes app-routes
   ;; app routes
-  (GET "/" {session :session} 
+  (GET "/" {session :session}
       (redirect (str "/post/index")))
 
 
@@ -25,8 +25,8 @@
                authenticated (user-authenticate? username password)]
 	  (assoc
 	      (redirect (headers "referer"))
-		 :session (if authenticated 
-			    (assoc session :username username) 
+		 :session (if authenticated
+			    (assoc session :username username)
 			    {})
 	       )))
 
@@ -36,28 +36,27 @@
 
   (GET "/post/:id" {params :params session :session}
        (let [id (params "id")
-	     username (:username session)
-	     article (get-post-info id)]
-	 (render (view-post article username))))
+             username (:username session)
+             article (get-post-info id)]
+         (render (view-post article username))))
 
   (GET "/post/:id/edit" {params :params session :session}
        (let [id       (params "id")
-	     username (session :username)
-	     post     (get-post-info id)]
-	 (if (username (:owner post))
-	   (render 
-	    (edit-post post username))
-	   (redirect (str "/post/" id)))))
+             username (session :username)
+             post     (get-post-info id)]
+         (if (username (:owner post))
+           (render (edit-post post username))
+           (redirect (str "/post/" id)))))
 
   (POST "/post/:id" {params :params session :session}
         (let [id       (params "id")
-	      article  (unescape-html (params "article"))
-	      username (session :username)]
-	  (do 
-	    (if username
-	      (update-post {:id id 
-			    :article (unescape-html article)}))
-	    (redirect (str "/post/" id)))))
+              article  (unescape-html (params "article"))
+              username (session :username)]
+          (do
+            (if username
+              (update-post {:id id
+                            :article (unescape-html article)}))
+            (redirect (str "/post/" id)))))
 
   ;; static files
 
@@ -71,7 +70,7 @@
 (def app
   (-> app-routes
     (wrap-file "public")
-      (wrap-session)
+    (wrap-session)
   ))
 
 (defn run
@@ -81,4 +80,3 @@
 (defn -main
   [& args]
   (run))
-  
