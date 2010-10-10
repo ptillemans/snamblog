@@ -58,6 +58,28 @@
                             :article (unescape-html article)}))
             (redirect (str "/post/" id)))))
 
+  (POST "/post/:post/comment" {params :params session :session}
+        (let [post_id (params "post")
+              comment (params "comment")
+              username (session :username)]
+          (do
+            (update-comment {:author username :post_id post_id :comment comment})
+            (redirect (str "/post/" post_id)))))
+
+  (POST "/post/:post_id/comment/:id" {params :params session :session}
+        (let [post_id (params "post_id")
+              id   (params "id")
+              comment (params "comment")
+              username (session :username)]
+          (do
+            (update-comment {:updated_by username
+                             :post_id post_id
+                             :comment comment
+                             :_id id})
+            (redirect (str "/post/" post_id)))))
+
+
+
   ;; static files
 
   (ANY "*" []

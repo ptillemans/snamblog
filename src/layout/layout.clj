@@ -48,13 +48,37 @@
   [{id :id username :username}]
   [:div#action] (maybe-substitute (if username (actions {:id id :username username}))))
 
+(html/defsnippet show-comment "layout/post.html" [:div#show_comment]
+  [{:keys [comment author ts]}]
+  [:p#show_comment_text] (html/content comment)
+  [:span#ts] (html/content (str ts))
+  [:span#author] (html/content author))
+
+(html/defsnippet edit-comment "layout/post.html" [:div#edit_comment]
+  [{:keys [post_id _id comment author ts]}]
+  [:span#author] (html/content author)
+  [:span#ts] (html/content (str ts))
+  [:form] (html/set-attr :action (str "/post/" post_id "/comment/" _id))
+  [:input#comment_form_id] (html/set-attr :value _id)
+  [:textarea#comment_form_text] (html/content comment)
+  )
+
+(defn comment-box [comment username]
+  (if (= username (:author comment))
+    (edit-comment comment)
+    (show-comment comment)))
+
 (html/defsnippet post "layout/post.html" [:div#post]
-  [{:keys [id title article]}]
+  [{:keys [id title article]} username]
   [:h2#title html/text-node]
     (maybe-substitute title)
   [:div#article html/any-node]
     (maybe-substitute
-     (html/html-snippet (markdown-to-html article))))
+     (html/html-snippet (markdown-to-html article)))
+  [:form#new_comment_form]
+    (html/set-attr :action (str "/post/" id "/comment"))
+  [:div#comments]
+    (html/content (map #(comment-box % username) (last-comments id))))
 
 (html/defsnippet editpost "layout/editpost.html" [:div#editpost]
   [{:keys [id title article]}]
@@ -64,50 +88,20 @@
     (maybe-substitute
      (html/html-snippet (escape-html article))))
 
-(html/defsnippet show-comment "layout/post.html" [:dev#show_comment]
-  [{:keys [comment author ts]}]
-  [:p#show_comment_text html/text-node] comment
-  [:span#show_comment_ts html/text-node] ts
-  [:span#show_comment_author html/text-node] author)
-
-(html/defsnippet edit-comment "layout/post.html" [:dev#show_comment]
-  [{:keys [post _id comment author]}]
-  [:input#comment_form_author] (html/set-attr :value post)
-  [:input#comment_form_id] (html/set-attr :value _id)
-  [:textarea#comment_form_text html/text-node] comment
-  [:input#comment_author] (html/set-attr :value author)
-  )
-
-
-
 ;; ============================================================================
 ;; Pages
 ;; ============================================================================
 
-(defn comment-list [post username]
-  (do
-    (for [comment (last-comments post)]
-      (if (= username (:author comment))
-        (edit-comment comment)
-        (show-comment comment)))
-    (edit-comment {:post post
-                   :comment ""
-                   :author username})))
-
-(defn middle-column [post-info username]
-  (let [post_id (:id post-info)]
-    (post post-info)
-    (comment-list post_id username)))
-
 (defn view-post [post-info username]
   (let [navl (nav1)
-        navr (nav2)]
+        navr (nav2)
+        body (post post-info username)]
    (base {:title (:title post-info)
           :header (page-header
                    {:id (:id post-info) :username username})
           :main (three-col
                  {:left  navl
-                  :middle (middle-column post-info username)
+                  :middle body
                   :right navr})
           })))
 
