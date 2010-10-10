@@ -64,9 +64,9 @@
   )
 
 (defn comment-box [comment username]
-      (if (= username (comment "author"))
-        (edit-comment comment)
-        (show-comment comment)))
+  (if (= username (:author comment))
+    (edit-comment comment)
+    (show-comment comment)))
 
 (html/defsnippet post "layout/post.html" [:div#post]
   [{:keys [id title article]} username]
