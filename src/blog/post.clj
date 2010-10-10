@@ -69,26 +69,24 @@ This space intentionally left blank (for now ;-) ).
 ;;============================================
 
 (defn get-comment [id]
-  (or
-   (fetch-one
-    :comments
-    :where { :_id id })
-   {:comment ""}))
-
+  (if id
+   (fetch-by-id "comments" id)
+   {:comment "" :author "*unknown*"}))
 
 (defn update-comment [params]
-  (let [comment (get-comment (:_id params))
-        updates (assoc params
+  (let [updates (assoc params
                   :ts (Date.))]
-    (if (contains? comment :_id)
-      (update! :comments comment (merge comment updates))
+    (if (contains? updates :_id)
+      (let [comment (get-comment (:_id params))
+            new-comment  (merge comment (dissoc updates :_id))]
+        (update! :comments comment new-comment))
       (insert! :comments updates))))
 
 (defn last-comments
-  ([post n]
+  ([post_id n]
      (fetch
       :comments
-      :where {:post post}
+      :where {:post_id post_id}
       :order :ts
       :limit 10
       :skip n))
