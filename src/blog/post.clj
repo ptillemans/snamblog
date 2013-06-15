@@ -7,13 +7,13 @@
   (:use blog.hash))
 
 (defn load-text-resource [name]
-  (apply str 
-	 (line-seq 
-	  (new BufferedReader 
-	       (new InputStreamReader 
-		    (.getResourceAsStream 
+  (apply str
+	 (line-seq
+	  (new BufferedReader
+	       (new InputStreamReader
+		    (.getResourceAsStream
 		     (.getClassLoader clojure.main ) name))))))
-						
+
 (defn markdown-to-html [txt]
   (let [cx (Context/enter)
         scope (.initStandardObjects cx)
@@ -29,36 +29,69 @@
 
 (mongo! :host "127.0.0.1" :db "snamblog")
 
-(defn get-post-info [id] 
-  (or 
-   (fetch-one 
+(defn get-post-info [id]
+  (or
+   (fetch-one
     :blogposts
     :where { :id id })
-   {:id id :title "No such article" :article "No such article\n==================\nThis space intentionally left blank\n" }))
+   {:id id
+    :title "No such article"
+    :article
+"No such article
+===============
+This space intentionally left blank (for now ;-) ).
+"
+    }))
 
-(defn update-post [params] 
+(defn update-post [params]
   (let [post (get-post-info (:id params))
-        previous (:_id post)
         updates (assoc params
-		  :title (first (s/split-lines (:article params)))
-		  :ts (Date.) 
-		  :prev previous)]
-    (do
-      (if (contains? post :_id)
-	(update! :blogposts post (merge post updates))
-        (insert! :blogposts updates)))))
+                  :title (first (s/split-lines (:article params)))
+                  :ts (Date.))]
+    (if (contains? post :_id)
+      (update! :blogposts post (merge post updates))
+      (insert! :blogposts updates))))
 
-(defn last-posts-summary 
+(defn last-posts-summary
   ([n]
-     (fetch 
-        :blogposts 
-	:where {:id {:$exists 1}} 
-	:order :ts 
-	:limit 5 
+     (fetch
+        :blogposts
+	:where {:id {:$exists 1}}
+	:order :ts
+	:limit 5
 	:skip n
 	:only [:title :id :ts]))
   ([]
      (last-posts-summary 0)))
+
+;;============================================
+;; Comments on posts
+;;============================================
+
+(defn get-comment [id]
+  (if id
+   (fetch-by-id "comments" id)
+   {:comment "" :author "*unknown*"}))
+
+(defn update-comment [params]
+  (let [updates (assoc params
+                  :ts (Date.))]
+    (if (contains? updates :_id)
+      (let [comment (get-comment (:_id params))
+            new-comment  (merge comment (dissoc updates :_id))]
+        (update! :comments comment new-comment))
+      (insert! :comments updates))))
+
+(defn last-comments
+  ([post_id n]
+     (fetch
+      :comments
+      :where {:post_id post_id}
+      :order :ts
+      :limit 10
+      :skip n))
+  ([post]
+     (last-comments post 0)))
 
 
 ;;============================================
@@ -68,14 +101,13 @@
 (defn get-user [username]
   (fetch-one :users
 	     :where {:username username}))
-  
+
 (defn update-user [user]
   (let [saved-user (get-user (:username user))
         new-user   (merge saved-user user)]
     (if (contains? new-user :_id)
       (update! :users saved-user new-user)
       (insert! :users new-user))))
-
 
 (defn- get-hash [username]
   (:password (get-user username)))
@@ -86,4 +118,3 @@
 (defn user-authenticate? [username password]
   (let [hash (get-hash username)]
     (= (sha256 password) hash)))
- 

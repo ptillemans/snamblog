@@ -4,6 +4,16 @@
    CLOSED: [2010-07-18 zo 10:15]
 
 
+
+** DONE make the jar self-executable
+   CLOSED: [2010-07-19 Mon 01:11]
+
+** DONE security : no check was done before updating posts
+   CLOSED: [2010-07-19 Mon 01:23]
+
+
+** TODO testability : abstract data store access to ease testability
+
 ** DONE rename blog to post
 
 [[file:src/blog/core.clj][core file
@@ -17,3 +27,5 @@
 *** TODO add metadata about the tag
 
 *** TODO create a reverse index from tags to posts
+
+** TODO automate git commit messages

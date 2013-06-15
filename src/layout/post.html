@@ -1,12 +1,43 @@
 <html>
-    <head>
-        <link rel="stylesheet" type="text/css" href="main.css"></link>
-    </head>
-    <body>
-        <div id="post" class="grid_6">
-            <div id="article" class="article">
-                Some interesting stuff, interesting to me at least.
-            </div>
+  <head>
+    <link rel="stylesheet" type="text/css" href="main.css"></link>
+  </head>
+  <body>
+    <div id="post" class="grid_6">
+      <p id="article" class="article">
+      Some interesting stuff, interesting to me at least.
+      </p>
+      <div id="new_comment">
+        <form id="new_comment_form" action="comment" method="POST">
+        <input type="hidden" name="post_id" id="comment_form_post"/>
+        <input type="hidden" name="author" id="comment_form_author"/>
+        <textarea id="comment_form_text" name="comment"/>
+        <input type="submit"/>
+        </form>
+      </div>
+      <div id="comments">
+        <div id="show_comment">
+          <p>
+            <span id="author">author</span>
+            (<span id="ts">October 2nd, 2010</span>)
+          </p>
+          <p id="show_comment_text">
+            Some interesting remarks
+          </p>
         </div>
-    </body>
+        <div id="edit_comment">
+          <p>
+            At <span id="ts">October 2nd, 2010</span>
+            , <span id="author">author</span> remarked
+          </p>
+          <form action="comment" method="POST">
+            <input type="hidden" name="post_id" id="comment_form_post"/>
+            <input type="hidden" name="author" id="comment_form_author"/>
+            <textarea name="comment" id="comment_form_text"/>
+            <input type="submit"/>
+          </form>
+        </div>
+      </div>
+    </div>
+  </body>
 </html>

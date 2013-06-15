@@ -15,22 +15,18 @@
 ;; ============================================================================
 (defroutes app-routes
   ;; app routes
-  (GET "/" {session :session} 
+  (GET "/" {session :session}
       (redirect (str "/post/index")))
 
-  (GET "/post/:id" {params :params session :session}
-       (let [id (params "id")
-	     username (:username session)
-	     article (get-post-info id)]
-	 (render (view-post article username))))
 
   (POST "/login" {headers :headers params :params session :session}
 	(let [ username (params "username")
 	       password (params "password")
                authenticated (user-authenticate? username password)]
-	       (assoc (redirect (headers "referer"))
-		 :session (if authenticated 
-			    (assoc session :username username) 
+	  (assoc
+	      (redirect (headers "referer"))
+		 :session (if authenticated
+			    (assoc session :username username)
 			    {})
 	       )))
 
@@ -38,19 +34,51 @@
 	(assoc (redirect (headers "referer"))
 	  :session (dissoc session :username)))
 
-  (GET "/edit/:id" {params :params session :session}
-       (let [id       (params "id")
-	     username (session :username)]
-	 (if username
-	   (render 
-	    (edit-post (get-post-info id) username))
-	   (redirect (str "/post/" id)))))
+  (GET "/post/:id" {params :params session :session}
+       (let [id (params "id")
+             username (:username session)
+             article (get-post-info id)]
+         (render (view-post article username))))
 
-  (POST "/edit/:id" [id title article]
-       (do 
-	 (update-post {:id id 
-		       :article (unescape-html article)})
-	   (redirect (str "/post/" id))))
+  (GET "/post/:id/edit" {params :params session :session}
+       (let [id       (params "id")
+             username (session :username)
+             post     (get-post-info id)]
+         (if (username (:owner post))
+           (render (edit-post post username))
+           (redirect (str "/post/" id)))))
+
+  (POST "/post/:id" {params :params session :session}
+        (let [id       (params "id")
+              article  (unescape-html (params "article"))
+              username (session :username)]
+          (do
+            (if username
+              (update-post {:id id
+                            :article (unescape-html article)}))
+            (redirect (str "/post/" id)))))
+
+  (POST "/post/:post/comment" {params :params session :session}
+        (let [post_id (params "post")
+              comment (params "comment")
+              username (session :username)]
+          (do
+            (update-comment {:author username :post_id post_id :comment comment})
+            (redirect (str "/post/" post_id)))))
+
+  (POST "/post/:post_id/comment/:id" {params :params session :session}
+        (let [post_id (params "post_id")
+              id   (params "id")
+              comment (params "comment")
+              username (session :username)]
+          (do
+            (update-comment {:updated_by username
+                             :post_id post_id
+                             :comment comment
+                             :_id id})
+            (redirect (str "/post/" post_id)))))
+
+
 
   ;; static files
 
@@ -64,7 +92,7 @@
 (def app
   (-> app-routes
     (wrap-file "public")
-      (wrap-session)
+    (wrap-session)
   ))
 
 (defn run
@@ -74,4 +102,3 @@
 (defn -main
   [& args]
   (run))
-  
